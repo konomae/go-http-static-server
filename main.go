@@ -1,9 +1,10 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 )
 
@@ -15,22 +16,26 @@ func logger(h http.Handler) http.Handler {
 }
 
 func main() {
-	// without program name
-	args := os.Args[1:]
-	hostPort := "127.0.0.1:8080"
-	path := "."
-	if len(args) >= 1 {
-		path = args[0]
-	}
-	if len(args) >= 2 {
-		hostPort = args[1]
-	}
+	port := flag.Int("port", 8080, "port number")
+	host := flag.String("host", "127.0.0.1", "host")
+	path := flag.String("path", ".", "document root path")
+	keyPath := flag.String("key", "", "private key path")
+	pubPath := flag.String("pub", "", "public key path")
 
-	absPath, _ := filepath.Abs(path)
+	flag.Parse()
 
-	log.Println("Host:", hostPort)
+	absPath, _ := filepath.Abs(*path)
+	hostPort := fmt.Sprintf("%s:%d", *host, *port)
+	handler := logger(http.FileServer(http.Dir(absPath)))
+
 	log.Println("Path:", absPath)
-	log.Println("URL :", "http://" + hostPort)
 
-	log.Fatal(http.ListenAndServe(hostPort, logger(http.FileServer(http.Dir(absPath)))))
+	if *keyPath == "" {
+		log.Println("URL :", "http://"+hostPort)
+		log.Fatal(http.ListenAndServe(hostPort, handler))
+	} else {
+		log.Println("URL :", "https://"+hostPort)
+		log.Fatal(http.ListenAndServeTLS(hostPort, *pubPath, *keyPath, handler))
+	}
+
 }
