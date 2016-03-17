@@ -1,6 +1,8 @@
 # go-http-static-server
 
-```
+```bash
+$ go-http-static-server -h
+
 Usage of go-http-static-server:
   -host string
     	host (default "127.0.0.1")
@@ -12,6 +14,12 @@ Usage of go-http-static-server:
     	port number (default 8080)
   -pub string
     	public key path
+```
+
+## Install
+
+```bash
+$ go get -u github.com/konomae/go-http-static-server
 ```
 
 
